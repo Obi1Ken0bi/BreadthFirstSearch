@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class Cell {
-    private CellType type;
-    private boolean visited;
+    private CellType type = CellType.FREE;
+    private boolean visited = false;
 }
