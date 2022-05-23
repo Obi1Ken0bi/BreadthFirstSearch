@@ -1,6 +1,7 @@
 package ru.puzikov.algorithms;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 
 import java.util.LinkedList;
 import java.util.function.Consumer;
@@ -23,81 +24,92 @@ public class BFS {
     }
 
 
-    public Point search(Point cords) {
+    public void search(Point cords) {
         init(cords);
         while (!queue.isEmpty()) {
             cords = queue.poll();
 
-            Point newX = getNextPoint(cords);
-            if (newX != null) return newX;
+            traverse(cords);
+
 
         }
 
 
-        return cords;
     }
 
-    public Point search(Point cords, Consumer<Point> consumer) {
-        int i = 0;
+    public Point[] search(Point cords, Consumer<Point> consumer) {
+        Point start = cords;
         init(cords);
         while (!queue.isEmpty()) {
             cords = queue.poll();
             consumer.accept(cords);
 
-            Point newX = getNextPoint(cords);
+            traverse(cords);
 
-            if (newX != null) return newX;
 
         }
+        return closestPath(start, new Point(matrix.length - 1, matrix.length - 1));
 
 
-        return cords;
     }
 
 
     private void init(Point cords) {
-        matrix[cords.getX()][cords.getY()].setVisited(true);
+        Cell start = matrix[cords.getX()][cords.getY()];
+        start.setVisited(true);
+        start.setRank(0);
         queue.add(cords);
     }
 
-    public boolean step(Consumer<Cell[][]> consumer) {
-        if (queue.isEmpty())
-            return false;
-        Point p = queue.poll();
-        Point newX = getNextPoint(p);
-        consumer.accept(this.matrix);
-        return newX != null;
-    }
-
-    public boolean step() {
-        if (queue.isEmpty())
-            return false;
-        Point p = queue.poll();
-        Point newX = getNextPoint(p);
-        return newX != null;
-    }
 
     public void setWall(Point p) {
         this.matrix[p.getX()][p.getY()].setType(CellType.WALL);
     }
 
-    private Point getNextPoint(Point cords) {
+    @SneakyThrows
+    private void traverse(Point cords) {
         for (Point move : moves) {
             int newX = cords.getX() + move.getX();
             int newY = cords.getY() + move.getY();
-            Point point = new Point(newX, newY);
-            if (isOutOfBorder(point))
+            Point nextPoint = new Point(newX, newY);
+            if (isOutOfBorder(nextPoint))
                 continue;
             if (matrix[newX][newY].getType() != CellType.WALL) {
-                if (matrix[newX][newY].getType() == CellType.TARGET)
-                    return point;
+
                 if (!matrix[newX][newY].isVisited()) {
-                    queue.add(point);
+                    int min = Math.min(matrix[cords.getX()][cords.getY()].getRank() + 1,
+                            matrix[nextPoint.getX()][nextPoint.getY()].getRank());
+                    matrix[nextPoint.getX()][nextPoint.getY()]
+                            .setRank(min);
+                    queue.add(nextPoint);
                     matrix[newX][newY].setVisited(true);
                 }
             }
         }
-        return null;
+
+    }
+
+    public Point[] closestPath(Point point, Point target) {
+        Point[] path = new Point[matrix[target.getX()][target.getY()].getRank()];
+        int j = 0;
+        int min = Integer.MAX_VALUE;
+        int minID = 0;
+        while (!target.equals(point)) {
+            for (int i = 0; i < moves.length; i++) {
+                int newX = target.getX() + moves[i].getX();
+                int newY = target.getY() + moves[i].getY();
+                if (isOutOfBorder(new Point(newX, newY)))
+                    continue;
+                if (matrix[newX][newY].getRank() < min) {
+                    min = matrix[newX][newY].getRank();
+                    minID = i;
+                }
+            }
+            target = new Point(target.getX() + moves[minID].getX(), target.getY() + moves[minID].getY());
+            path[j] = target;
+            j++;
+        }
+        return path;
     }
 
 

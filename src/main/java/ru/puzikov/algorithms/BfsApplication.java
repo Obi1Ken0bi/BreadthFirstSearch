@@ -12,14 +12,11 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import lombok.SneakyThrows;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class BfsApplication extends Application {
-    private final int MATRIX_SIZE = 50;
+    private final int MATRIX_SIZE = 10;
     private final int CANVAS_SIZE = 1000;
     private final int BLOCK_SIZE = CANVAS_SIZE / MATRIX_SIZE;
-    ExecutorService executorService = Executors.newFixedThreadPool(2);
     private BFS bfs;
     private GraphicsContext gc;
 
@@ -40,14 +37,14 @@ public class BfsApplication extends Application {
         Scene scene = new Scene(root, CANVAS_SIZE, CANVAS_SIZE);
         stage.setTitle("Hello!");
         stage.setScene(scene);
-        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY && !mouseEvent.isSecondaryButtonDown())
                     beginSearch(new Point((int) (mouseEvent.getX() / BLOCK_SIZE), (int) (mouseEvent.getY() / BLOCK_SIZE)));
             }
         });
-        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.isSecondaryButtonDown())
@@ -94,25 +91,25 @@ public class BfsApplication extends Application {
         gc.fillRect(point.getX() * BLOCK_SIZE, point.getY() * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
         gc.strokeRect(point.getX() * BLOCK_SIZE, point.getY() * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
 
-//        System.out.println(Arrays.deepToString(bfs.getMatrix()));
-//        gc.setStroke(Color.WHITE);
-//        System.out.println(point);
-//        Cell cell = bfs.getMatrix()[point.getX()][point.getY()];
-//        if (cell.isVisited())
-//            gc.setFill(Color.YELLOW);
-//        else gc.setFill(Color.BLACK);
-//        if (cell.getType()==CellType.TARGET)
-//            gc.setFill(Color.GREEN);
-//        if (cell.getType()==CellType.WALL)
-//            gc.setFill(Color.NAVY);
-//        gc.fillRect(point.getX()*BLOCK_SIZE,point.getY()*BLOCK_SIZE,BLOCK_SIZE,BLOCK_SIZE);
-//        gc.strokeRect(point.getX()*BLOCK_SIZE,point.getY()*BLOCK_SIZE,BLOCK_SIZE,BLOCK_SIZE);
 
     }
 
     private void beginSearch(Point p) {
 
-        bfs.search(p, this::drawCell);
+        Point[] points = bfs.search(p, this::drawCell);
+        drawWinPath(points);
+
+
+    }
+
+    private void drawWinPath(Point[] points) {
+        for (Point point : points) {
+            gc.setStroke(Color.WHITE);
+            gc.setFill(Color.RED);
+            gc.fillRect(point.getX() * BLOCK_SIZE, point.getY() * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            gc.strokeRect(point.getX() * BLOCK_SIZE, point.getY() * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        }
+
 
     }
 
